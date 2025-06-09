@@ -1,0 +1,31 @@
+<div class="chat-conversation-container">
+
+  <div class="chat-header">
+    <span (click)="backAction()" *ngIf="isMobileView" style="color: white; font-size: 15px; cursor: pointer;">
+      <i class="fas fa-arrow-left"></i>
+    </span>
+    <h4 style="color: white;">{{ username }}</h4>
+    <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
+    <span style="cursor: pointer; margin-left: auto;" (click)="menu.toggle($event)">
+      <i class="pi pi-ellipsis-v" style="color: white; font-size: 14px;"></i>
+    </span>
+  </div>
+
+  <div class="chat-messages" #scrollMe>
+    <div *ngFor="let msg of messages" [ngClass]="msg.sender == 'user' ? 'user-message' : 'from-user-message'"
+      style="position: relative;">
+      {{ msg.text }}
+      <span style="font-size: 12px; color: gray;">{{ msg.time }}</span>
+    </div>
+  </div>
+  <div *ngIf="isTyping" style="font-size: 15px; color: rgb(34, 186, 34); margin-left: 20px;">typing...</div>
+
+  <div class="chat-input">
+    <!-- <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..." (keyup.enter)="sendMessage()" (input)="onTyping()"/> -->
+    <textarea #messageBox [(ngModel)]="newMessage" placeholder="Type a message..."
+      (keyup.enter)="sendMessage(messageBox)" (input)="onTyping(); autoResize($event)" rows="1"></textarea>
+
+    <!-- <button >Send</button> -->
+    <i class="fas fa-paper-plane" (click)="sendMessage(messageBox)" style="font-size: 20px; color: #007bff;"></i>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+.regs-container{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 40vw;
+    min-width: 300px;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20vh auto;
+    background-color: rgb(191, 156, 224);
+}
+
+.next-btn{
+    padding: 5px;
+    background-color: rgb(74, 74, 234);
+    outline: none;
+    border: none;
+    color: white;
+    font-size: 15px;
+    width: 40%;
+    margin: 0 auto;
+    border-radius: 5px;
+    transition: transform ease 0.3s;
+    cursor: pointer;
+}
+
+.back-btn,
+.BackButton{
+    background-color: rgb(237, 29, 29);
+    outline: none;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: transform ease 0.3s;
+    cursor: pointer;
+}
+
+.resentOtp-btn{
+    background-color: rgb(56, 173, 220);
+    outline: none;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: transform ease 0.3s;
+    cursor: pointer;
+}
+
+button:active{
+    transform: scale(0.9);    
+}
+
+input{
+    outline: none;
+}
+
+.next-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none; 
+  }
+  

@@ -1,0 +1,53 @@
+<div class="chat-list-container">
+  <h3 style="margin: 10px;color: white;"><b>E</b>lite</h3>
+
+  <div *ngIf="username"
+    style="display: flex; align-items: center; justify-content: space-between; margin: 0px 20px;">
+    <span style="color: white;">Welcome <b>{{ username }}</b></span>
+    <button (click)="logout()" class="logout" style="margin-left: 10px; padding: 1px 5px;"><i class="fas fa-sign-out-alt"></i></button>
+  </div>
+  
+  <div *ngIf="!showSearchInput" class="search-bar">
+    <i class="fas fa-search"></i>    
+    <input type="search" name id>
+  </div>
+
+  <!-- Users list -->
+  <div *ngIf="!showSearchInput" style="overflow: scroll; scrollbar-width: none;">
+    <div *ngIf="users.length > 0; else noChats" class="user-list-container">
+      <div *ngFor="let user of users" (click)="openConversation(user)" style="display: flex; flex-direction: row; position: relative;">        
+        <img src="assets/Contacts.png"
+        alt="Contact" width="40px" height="40px" style="border-radius: 50%;" />
+        <span style="color: white;">{{ user }}</span>
+        <p *ngIf="typingStatus[user]" style="font-size: 13px; color: green; position: absolute; left: 19%; top: 30%;">Typing...</p>
+        <p *ngIf="!typingStatus[user]" class="latest-message">{{ getLastMessage(user) }}</p>
+        <span *ngIf="getUnreadCount(user) > 0" class="unread-badge">{{ getUnreadCount(user) }}</span>
+        <span class="date-time"  [ngStyle]="{ 'color': getUnreadCount(user) > 0 ? 'rgb(77, 176, 77)' : 'white', 'font-weight': getUnreadCount(user) > 0 ? 'bold' : 'normal' }">
+        {{ getMessageTime (user) | date: 'shortTime'  }}</span>  
+      </div>
+    </div>
+    <ng-template #noChats>
+      <p style="color: rgb(19, 81, 135); text-align: center;">No Chat with Users</p>
+    </ng-template>
+  </div>
+
+  <div *ngIf="!showSearchInput" (click)="addUserAction()"
+    style="font-size: 17px; background-color: rgb(48, 48, 48); width: 30px; padding:5px; border-radius: 10px; position: absolute; bottom: 60px; right: 20px; cursor: pointer;">
+    <span
+      style="font-weight: bold; margin-left: 3px; color: white;"><i class="fa fa-plus"></i></span>
+  </div>
+
+  <div *ngIf="showSearchInput" class="search-bar">
+    <input type="text" [(ngModel)]="searchQuery" class="showSearchInput" (input)="searchUser()"
+      placeholder="Search user to chat..." />
+      <i class="fas fa-times" id="cancel-icon" (click)="searchCloseAction()"></i>
+  </div>
+
+  <div *ngIf="searchedUsers.length > 0" class="user-list-container">
+    <h4 style="text-align: center;">Searched Users</h4>
+    <div *ngFor="let user of searchedUsers"
+      (click)="openConversation(user.username)">
+      {{ user.username }}
+    </div>
+  </div>
+</div>

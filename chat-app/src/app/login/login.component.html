@@ -1,0 +1,60 @@
+<div class="login-container blurred-bg">
+  <h3 style="text-align: center; color: white;">Login</h3>
+
+  <div *ngIf="!isEmailMode && !isUserNameMode" class="mobile-num">
+    <label>Enter your Registered Mobile Number:</label>
+    <div style="width: 100%; display: flex; gap: 5px; ">
+      <select name="country-code" id="country-code" style="padding: 6px;">
+        <option value="+1">🇺🇸 +1</option>
+        <option value="+91" selected>🇮🇳 +91</option>
+        <option value="+44">🇬🇧 +44</option>
+        <option value="+61">🇦🇺 +61</option>
+        <option value="+81">🇯🇵 +81</option>
+      </select>
+      <input type="text" [(ngModel)]="contact" placeholder="Mobile Number"
+        (input)="validateContact()"
+        style="padding: 5px; outline: none; width: 100%;">
+    </div>
+
+    <div *ngIf="validationMessage"
+      [ngStyle]="{ color: isValidUserId ? 'green' : 'red' }"
+      style="font-size: 15px; margin-top: 5px;"> {{ validationMessage }}</div>
+
+  </div>
+
+  <div *ngIf="isEmailMode && !isUserNameMode" class="email">
+    <label>Enter your Registered Email Id:</label>
+    <input type="text" [(ngModel)]="contact" placeholder="Email Id"
+      (input)="validateContact()"
+      style="padding: 5px; outline: none;">
+      
+    <div *ngIf="validationMessage"
+      [ngStyle]="{ color: isValidUserId ? 'green' : 'red' }"
+      style="font-size: 15px; margin-top: 5px;"> {{ validationMessage }}</div>
+
+  </div>
+
+  <div class="Username" *ngIf="isUserNameMode">
+    <label>Create your User Name:</label>
+    <input type="text" [(ngModel)]="username" placeholder="User Name" (input)="validateUsername()"
+      style="padding: 5px; outline: none;">
+
+    <div *ngIf="validationMessage" [ngStyle]="{ color: isValidUserId ? 'green' : 'red' }" style="color: red; font-size: 15px;">
+      {{ validationMessage }}
+    </div>
+    
+  </div>
+
+  <button class="next-btn" (click)="nextAction()"
+    [disabled]="!isValidInput()">Next</button>
+
+  <div
+    style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-left: 6%;">
+    <span style="cursor: pointer; width: 40%;" (click)="loginChangeAction()">
+      {{ isEmailMode ? 'or Login with Mobile' : 'or Login with Email' }}
+    </span>
+    <span
+      style="cursor: pointer; width: 40%; font-size: 14px; margin-left: 7%; text-decoration: underline; color: rgb(74, 72, 72);"
+      (click)="registernewUserAction()">Register New User ?</span>
+  </div>
+</div>

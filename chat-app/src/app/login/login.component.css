@@ -1,0 +1,41 @@
+
+.login-container{
+    padding: 15px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 25vh auto;
+    background-color: rgb(191, 156, 224);
+    border-radius: 5px;
+}
+.mobile-num,
+.email,
+.Username {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.next-btn{
+    padding: 5px;
+    background-color: rgb(74, 74, 234);
+    outline: none;
+    border: none;
+    color: white;
+    font-size: 15px;
+    width: 40%;
+    margin: 0 auto;
+    border-radius: 5px;
+    transition: transform ease 0.3s;
+}
+
+button:active{
+    transform: scale(0.9);    
+}
+
+.next-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
