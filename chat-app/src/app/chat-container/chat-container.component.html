@@ -1,0 +1,37 @@
+<!-- <div class="chat-container flex gap-2 w-12">
+  <div class="w-24rem hidden md:block">
+    <app-chat-list (userSelected)="onUserSelected($event)"></app-chat-list>
+  </div>
+  <div class="w-12 md:w-9" *ngIf="selectedUser">
+    <app-chat-converstation [username]="selectedUser"></app-chat-converstation>
+  </div>
+</div> -->
+
+<div class="chat-container flex w-full relative">
+
+  <!-- Chat List -->
+  <div class="chat-list transition-all duration-500 ease-in-out"
+       [ngClass]="isChatExpanded ? 'collapsed' : 'expanded hidden sm:block'">
+    <app-chat-list (userSelected)="onUserSelected($event)"></app-chat-list>
+  </div>
+
+  <!-- Toggle Button -->
+  <div class="flex items-center z-20 relative">
+    <button (click)="toggleChatView()" class="overlaybtn">
+      <i class="pi" [ngClass]="isChatExpanded ? 'pi-angle-double-right' : 'pi-angle-double-left'"></i>
+    </button>
+  </div>
+
+  <!-- Chat Conversation -->
+  <div class="chat-content transition-all duration-500 ease-in-out"
+       [ngClass]="isChatExpanded ? 'expanded-chat' : 'collapsed-chat w-12 md:w-9'">
+    <ng-container *ngIf="selectedUser; else noUser">
+      <app-chat-converstation [username]="selectedUser"></app-chat-converstation>
+    </ng-container>
+    <ng-template #noUser>
+      <div class="text-gray-500 text-lg font-medium p-4 text-center mt-16">
+        Select a user to chat
+      </div>
+    </ng-template>
+  </div>
+</div>

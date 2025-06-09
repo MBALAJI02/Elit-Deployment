@@ -1,0 +1,126 @@
+.chat-list-container {
+    max-width: 30vw;
+    min-width: 350px;
+    max-height: 98vh;
+    min-height: 98vh;
+    /* background-color: rgb(191, 156, 224); */
+    background-color: black;
+    margin: 1vh auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-radius: 5px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-bar input {
+    width: 80%;
+    padding: 10px;
+    outline: none;
+    border: none;
+    background-color: rgb(48, 48, 48);
+    border-radius: 0px 30px 30px 0px;
+}
+
+.search-bar .showSearchInput {
+    border-radius: 30px 0px 0px 30px;
+}
+
+.search-bar #cancel-icon {
+    border-radius: 0px;
+    padding-bottom: 9.5px;
+    border-radius: 0px 30px 30px 0px;
+    cursor: pointer;
+}
+
+.search-bar i {
+    background-color: aliceblue;
+    padding: 10px;
+    border-radius: 30px 0px 0px 30px;
+    color: rgb(155, 250, 219);
+    padding-bottom: 9.5px;
+    background-color: rgb(48, 48, 48);
+}
+
+.user-list-container div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    /* background-color: rgb(107, 106, 106); */
+    background-color: rgb(48, 48, 48);
+    margin: 20px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.user-list-container {
+    scrollbar-width: none;
+    overflow-y: scroll;
+}
+
+.unread-badge {
+    position: absolute;
+    right: 6%;
+    background-color: rgb(77, 176, 77);
+    padding: 2px;
+    border-radius: 50%;
+    width: 18px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    bottom: 20%;
+}
+
+.latest-message {
+    font-size: 13px;
+    color: rgb(119, 119, 119);
+    position: absolute;
+    left: 19%;
+    top: 45%;
+    width: 65%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.date-time {
+    font-size: 12px;
+    color: gray;
+    position: absolute;
+    right: 6%;
+}
+
+.logout {
+    outline: none;
+    border: none;
+    color: white;
+    background-color: rgb(48, 48, 48);
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* @media (min-width: 573px){
+    .chat-list-container {
+    max-width: 30vw;
+    min-width: 315px;
+    max-height: 98vh;
+    min-height: 98vh;
+    background-color: black;
+    margin: 1vh auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-radius: 5px;
+} */
+

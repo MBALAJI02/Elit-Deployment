@@ -1,0 +1,137 @@
+/* .chat-conversation-container {
+  max-width: 30vw;
+  min-width: 350px;
+  min-height: 95vh;
+  max-height: 95vh;
+  margin: 2vh auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background-color: rgb(191, 156, 224);
+  border-radius: 5px;
+  position: relative;
+} */
+.chat-conversation-container {
+  min-height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(48, 48, 48);
+  border-radius: 5px;
+  position: relative;
+}
+
+.chat-header {
+  padding: 10px;
+  border-bottom: 1px solid lightgray;
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chat-header h4 {
+  margin: 0px;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: none;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #daf1da;
+  padding: 6px 10px;
+  border-radius: 10px 0px 10px 10px;
+  max-width: 85%;
+  word-break: break-all;
+}
+
+.from-user-message {
+  align-self: flex-start;
+  background-color: #e0e0e0;
+  padding: 6px 10px;
+  border-radius: 0px 10px 10px 10px;
+  max-width: 85%;
+  word-break: break-all;
+}
+
+.chat-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #ffffff;
+  border-radius: 10px;
+  background-color: rgb(26, 24, 24);
+  width: 95%;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  /* border-top: 1px solid lightgray; */
+}
+
+.chat-input textarea {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid lightgray;
+  border-radius: 25px;
+  outline: none;
+  font-size: 1rem;
+  scrollbar-width: none;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 100px;
+  resize: none;
+  border: none;
+  background-color: transparent;
+  color: white;
+}
+
+.chat-input button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}
+
+::ng-deep .p-menu-overlay {
+  left: 87% !important;
+}
+
+::ng-deep .p-ripple {
+  color: grey !important;
+  padding: 10px !important;
+  font-weight: 100;
+  font-size: 14px;
+  width: 120px;
+}
+
+::ng-deep .p-menu-list {
+  background-color: #fff !important;
+  width: 50%;
+  border-radius: 5px;
+
+}
+
+::ng-deep .p-ripple:hover {
+  color: rgb(65, 63, 63) !important;
+}

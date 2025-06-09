@@ -1,0 +1,50 @@
+.chat-container {
+  height: 100vh;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.chat-list {
+  overflow: hidden;
+  transition: width 0.5s ease-in-out;
+}
+
+.chat-list.expanded {
+  width: 24rem;
+}
+
+.chat-list.collapsed {
+  width: 0;
+}
+
+.overlaybtn {
+  height: 10vh;
+  margin: 40vh auto;
+  background: transparent;
+  outline: none;
+  border: none;
+  color: white;
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.overlaybtn i {
+  font-size: 20px;
+}
+
+.chat-content {
+  transition: width 0.5s ease-in-out;
+  height: 100%;
+}
+
+.chat-content.expanded-chat {
+  width: calc(100% - 0rem);
+}
+
+@media (min-width: 573px) {
+  .chat-content.collapsed-chat {
+    width: calc(100% - 24rem) !important;
+  }
+}
+
