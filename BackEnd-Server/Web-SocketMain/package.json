@@ -1,14 +1,15 @@
 {
   "name": "web-socketmain",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "socket.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node socket.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "WebSocket server using Express and Socket.IO",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
