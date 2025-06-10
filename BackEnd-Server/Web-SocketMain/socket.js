@@ -60,8 +60,3 @@ const PORT = process.env.WEBSOCKET_PORT;
 server.listen(PORT, () => {
   console.log(`WebSocket Server running at http://localhost:${PORT}`);
 });
-
-module.exports = (req, res) => {
-  res.status(200).send("Socket placeholder (WebSockets not fully supported on Vercel)");
-};
-
