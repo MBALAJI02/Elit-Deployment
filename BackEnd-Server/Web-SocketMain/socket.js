@@ -29,12 +29,16 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', (data) => {
     const { to, message, from } = data;
-    io.to(to).emit('receive_message', { from, message });   
-    io.emit('new_message_sent', {from, to, message });
+    io.to(to).emit('receive_message', { from, message });
+    io.emit('new_message_sent', { from, to, message });
   });
 
   socket.on('send_unread_count', ({ from, to, message }) => {
     io.emit('update_unread', { from, to, message });
+  });
+
+  socket.on('reset_unread_count', ({ from, to }) => {
+    io.emit('reset_unread', { from, to, reset: true });
   });
 
   socket.on('typing', ({ from, to }) => {

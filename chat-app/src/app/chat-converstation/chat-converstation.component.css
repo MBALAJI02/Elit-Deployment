@@ -135,3 +135,15 @@
 ::ng-deep .p-ripple:hover {
   color: rgb(65, 63, 63) !important;
 }
+
+@media (max-width: 573px) {
+  .chat-conversation-container {
+    min-height: 92vh;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(48, 48, 48);
+    border-radius: 5px;
+    position: relative;
+  }
+}

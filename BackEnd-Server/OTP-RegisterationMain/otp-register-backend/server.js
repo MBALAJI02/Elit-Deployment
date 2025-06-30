@@ -33,7 +33,7 @@ const Message = mongoose.model('Message', {
   from: String,
   to: String,
   message: String,
-  read: { type: Boolean, default: false },  
+  read: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now }
 });
 
@@ -46,8 +46,8 @@ function generateOTP() {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'balajimohan941@gmail.com', 
-    pass: 'jzuu kodx dpcf xmth' 
+    user: 'balajimohan941@gmail.com',
+    pass: 'jzuu kodx dpcf xmth'
   },
   tls: {
     rejectUnauthorized: false
@@ -75,20 +75,20 @@ app.post('/send-otp', async (req, res) => {
   const user = new User({ contact, otp });
   await user.save();
 
-    if (contact.includes('@')) {
-      try {
-        await transporter.sendMail({
-          from: 'yourgmail@gmail.com',
-          to: contact,
-          subject: 'Your OTP Code',
-          text: `Your OTP is: ${otp}`
-        });
-        console.log('✅ Email sent to', contact);
-      } catch (error) {
-        console.error('Email sending failed:', error);
-        return res.status(500).json({ message: 'Failed to send email' });
-      }
+  if (contact.includes('@')) {
+    try {
+      await transporter.sendMail({
+        from: 'yourgmail@gmail.com',
+        to: contact,
+        subject: 'Your OTP Code',
+        text: `Your OTP is: ${otp}`
+      });
+      console.log('✅ Email sent to', contact);
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      return res.status(500).json({ message: 'Failed to send email' });
     }
+  }
 
   res.json({ message: 'OTP sent' });
 });
@@ -327,14 +327,28 @@ app.post('/mark-messages-read', async (req, res) => {
       { from: to, to: from, read: false },
       { $set: { read: true } }
     );
-    res.status(200).json({ message: 'Messages marked as read' }); 
+    res.status(200).json({ message: 'Messages marked as read' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
+app.post('/reset-unread', async (req, res) => {
+  const { from, to } = req.body;
 
+  try {
+    await Message.updateMany(
+      { from: to, to: from, read: false },
+      { $set: { read: true } }
+    );
+
+    res.status(200).json({ message: 'Unread messages marked as read' });
+  } catch (err) {
+    console.error('Error resetting unread in DB:', err);
+    res.status(500).json({ message: 'Error resetting unread count' });
+  }
+});
 
 app.listen(PORT, () => console.log('Server running on http://localhost:3000'));
 

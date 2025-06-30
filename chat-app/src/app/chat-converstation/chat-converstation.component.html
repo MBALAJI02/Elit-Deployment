@@ -20,7 +20,7 @@
   </div>
   <div *ngIf="isTyping" style="font-size: 15px; color: rgb(34, 186, 34); margin-left: 20px;">typing...</div>
 
-  <div class="chat-input">
+  <div class="chat-input" #chatInput>
     <!-- <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..." (keyup.enter)="sendMessage()" (input)="onTyping()"/> -->
     <textarea #messageBox [(ngModel)]="newMessage" placeholder="Type a message..."
       (keyup.enter)="sendMessage(messageBox)" (input)="onTyping(); autoResize($event)" rows="1"></textarea>

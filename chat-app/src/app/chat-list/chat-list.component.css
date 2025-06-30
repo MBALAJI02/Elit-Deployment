@@ -108,19 +108,20 @@
     border-radius: 5px;
 }
 
-/* @media (min-width: 573px){
+@media (max-width: 573px){
     .chat-list-container {
     max-width: 30vw;
-    min-width: 315px;
-    max-height: 98vh;
-    min-height: 98vh;
+    min-width: 100vw;
+    min-height: 92vh;
+    max-height: 70vh;
     background-color: black;
-    margin: 1vh auto;
+    margin: 0vh auto;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     border-radius: 5px;
-} */
+}
+}
 
