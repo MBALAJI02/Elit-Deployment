@@ -46,34 +46,48 @@ export class ChatListComponent {
 
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd && this.router.url == '/chat-list') {
-        this.fetchMessagedUserFromDb();
+        this.fetchUnreadMessages();
       }
-    });    
+    });
 
     this.newMesageSentAction();
     this.liveTypingAction();
-    this.fetchMessagedUserFromDb();
     this.liveUnreadCountAction();
     this.fetchUnreadMessages();
   }
 
-  fetchMessagedUserFromDb() {
-    this.http.get<string[]>(this.chatService.Service_getMessagedUser +'/'+ this.username)
-      .subscribe(
-        res => this.users = res,
-        err => console.error('Error fetching users:', err)
-      );
+  fetchUnreadMessages(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.http.get<{ username: string, count: number, lastMessageTime: Date, lastMessage: string }[]>(
+        this.chatService.Service_getUnreadMessage + '/' + this.username
+      ).subscribe({
+        next: (unreadMessages) => {
+          this.users = []; // Reset users list before pushing
+
+          unreadMessages.forEach((message) => {
+            // Populate unread messages map
+            this.unreadMessages[message.username] = {
+              count: message.count,
+              lastMessageTime: message.lastMessageTime,
+              lastMessage: message.lastMessage
+            };
+
+            // Also collect usernames (if needed elsewhere)
+            this.users.push(message.username);
+
+            console.log("unreadMessages::::::::::::", this.unreadMessages[message.username]);
+          });
+
+          resolve();
+        },
+        error: (err) => {
+          reject(err);
+        }
+      });
+    });
   }
 
-  fetchUnreadMessages() {
-    this.http.get<{ username: string, count: number, lastMessageTime: Date, lastMessage: string }[]>(this.chatService.Service_getUnreadMessage +'/'+ this.username)
-      .subscribe((unreadMessages) => {
-        unreadMessages.forEach((message) => {
-          this.unreadMessages[message.username] = { count: message.count, lastMessageTime: message.lastMessageTime, lastMessage: message.lastMessage };
-          console.log("unreadMessages::::::::::::", this.unreadMessages[message.username])
-        });
-      });
-  }
+
 
   getUnreadCount(user: string) {
     if (this.unreadMessages && this.unreadMessages[user]) {
@@ -113,21 +127,23 @@ export class ChatListComponent {
   sendMessageTo(user: string, message: string) {
     if (!message.trim()) return;
     const currentUser = this.loggedInUsername;
-    this.http.post(this.chatService.Service_sendMessage, {from: currentUser, to: user, message: message }).subscribe(
+    this.http.post(this.chatService.Service_sendMessage, { from: currentUser, to: user, message: message }).subscribe(
       () => { },
       (err) => console.error('Message send error:', err)
     );
   }
 
-  newMesageSentAction(){
+  newMesageSentAction() {
     this.socket.on('new_message_sent', (data) => {
       if (data.to == this.loggedInUsername && !this.users.includes(data.from)) {
-        this.users.unshift(data.from); 
+        this.users.unshift(data.from);
         this.unreadMessages[data.from] = {
           count: 0,
           lastMessage: data.message,
           lastMessageTime: data.timestamp
         };
+        this.webSocket.playNotificationSoundForChatList();
+        console.log('audio called');
         this.cdRef.detectChanges();
       }
     });
@@ -158,7 +174,7 @@ export class ChatListComponent {
         } else {
           this.unreadMessages[sender] = {
             count: 1,
-            lastMessageTime: new Date(), 
+            lastMessageTime: new Date(),
             lastMessage: data.message
           };
         }
@@ -168,8 +184,11 @@ export class ChatListComponent {
   }
 
   openConversation(username: string) {
-    this.http.post(this.chatService.Service_markMessagesRead, {from: this.username, to: username}, { responseType: 'text' }).subscribe(() => {
-      this.unreadMessages[username] = { count: 0, lastMessageTime: new Date(), lastMessage: '' };
+    this.http.post(this.chatService.Service_markMessagesRead, { from: this.username, to: username }, { responseType: 'text' }).subscribe(() => {
+      // this.unreadMessages[username] = { count: 0, lastMessageTime: new Date(), lastMessage: '' };
+      if (this.unreadMessages[username]) {
+        this.unreadMessages[username].count = 0;
+      }
       if (window.innerWidth < 573) {
         this.router.navigate(['/chat-conversation', username]);
       } else {

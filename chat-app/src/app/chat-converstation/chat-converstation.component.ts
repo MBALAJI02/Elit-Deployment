@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,8 +17,9 @@ import { ChatService } from '../chat.service';
   templateUrl: './chat-converstation.component.html',
   styleUrls: ['./chat-converstation.component.css']
 })
-export class ChatConverstationComponent implements AfterViewChecked {
+export class ChatConverstationComponent implements AfterViewChecked, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild('scrollMe') private scrollContainer!: ElementRef;
+  @ViewChild('chatInput') chatInput!: ElementRef;
 
   @Input() username: string = '';
   messages: { text: string; sender: 'user' | 'bot'; time: string }[] = [];
@@ -27,6 +28,8 @@ export class ChatConverstationComponent implements AfterViewChecked {
   menuVisible = false;
   menuItems: MenuItem[] = [];
   isMobileView: boolean = window.innerWidth < 573;
+  initialViewportHeight = 0;
+  keyboardVisible = false;
 
   private socket!: Socket;
   private currentUser: string | null = localStorage.getItem('username');
@@ -58,6 +61,9 @@ export class ChatConverstationComponent implements AfterViewChecked {
             minute: 'numeric'
           })
         });
+        this.webSocket.playNotificationSoundForChatConves();
+        console.log('audio called');
+
       }
     });
 
@@ -67,9 +73,51 @@ export class ChatConverstationComponent implements AfterViewChecked {
 
   }
 
+  ngAfterViewInit() {
+    this.initialViewportHeight = window.visualViewport?.height || window.innerHeight;
+
+    window.visualViewport?.addEventListener('resize', this.onViewportResize);
+  }
+
+  onViewportResize = () => {
+    const currentHeight = window.visualViewport?.height || window.innerHeight;
+    const keyboardHeight = this.initialViewportHeight - currentHeight;
+
+    // Threshold check to avoid small resizes triggering logic
+    if (keyboardHeight > 100) {
+      this.keyboardVisible = true;
+
+      if (this.chatInput) {
+        this.chatInput.nativeElement.style.marginBottom = `${keyboardHeight}px`;
+      }
+
+      console.log(`Keyboard is OPEN, height: ${keyboardHeight}px`);
+    } else {
+      this.keyboardVisible = false;
+
+      if (this.chatInput) {
+        this.chatInput.nativeElement.style.marginBottom = '10px';
+      }
+
+      console.log(`Keyboard is CLOSED`);
+    }
+  };
+
+
+  ngOnDestroy() {
+    window.visualViewport?.removeEventListener('resize', this.onViewportResize);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['username'] && !changes['username'].firstChange) {
+      this.fetchUserMessage();
+      this.scrollToBottom();
+    }
+  }
+
   fetchUserMessage() {
     // Fetch chat messages from the DB
-    this.http.get<any[]>(`${this.chatService.Service_getMessages}/`+`${this.currentUser}/${this.username}`)
+    this.http.get<any[]>(`${this.chatService.Service_getMessages}/` + `${this.currentUser}/${this.username}`)
       .subscribe(
         data => {
           this.messages = data.map(msg => ({
@@ -182,13 +230,13 @@ export class ChatConverstationComponent implements AfterViewChecked {
 
   viewContact() {
     console.log('View Contact clicked');
-    
+
   }
 
   clearChat() {
     if (!this.currentUser || !this.username) return;
 
-    this.http.delete(`${this.chatService.Service_clearMessages}/`+`${this.currentUser}/${this.username}`, {
+    this.http.delete(`${this.chatService.Service_clearMessages}/` + `${this.currentUser}/${this.username}`, {
       responseType: 'text'
     }).subscribe(
       () => {
@@ -203,7 +251,7 @@ export class ChatConverstationComponent implements AfterViewChecked {
 
   blockContact() {
     console.log('Blocked contact');
-  
+
   }
 
   deleteContact() {
@@ -212,7 +260,7 @@ export class ChatConverstationComponent implements AfterViewChecked {
 
   showMoreOptions() {
     console.log('More options clicked');
-    
+
   }
 
 

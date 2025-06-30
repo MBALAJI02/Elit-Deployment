@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'http://localhost:3000'
+  apiBaseUrl: 'https://chat-app-server-ks97.onrender.com'
 };
