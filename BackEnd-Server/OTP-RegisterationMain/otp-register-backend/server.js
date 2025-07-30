@@ -183,9 +183,8 @@ app.post('/notify-user', async (req, res) => {
 
     const payload = {
       token: user.pushToken,
-      body: title,
-      title: `${sender} says: ${body}`
-      
+      title: title,
+      body: `${sender} says: ${body}`
     };
 
     // 👇 Call the notification server
@@ -220,7 +219,7 @@ app.post('/send-message', async (req, res) => {
 
   try {
     const newMsg = new Message({ from, to, message });
-    await newMsg.save();   
+    await newMsg.save();
     res.status(201).json({ message: 'Message saved successfully' });
   } catch (error) {
     console.error('Error saving message:', error);
