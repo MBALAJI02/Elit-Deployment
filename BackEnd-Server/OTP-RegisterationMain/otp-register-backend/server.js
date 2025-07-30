@@ -4,10 +4,17 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const axios = require('axios');
 const PORT = process.env.PORT;
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:4200', // Angular port
+  methods: ['GET', 'POST'],
+  credentials: true // Optional if you're using cookies
+}));
+
 app.use(bodyParser.json());
 
 // MongoDB Connection
@@ -26,6 +33,7 @@ const User = mongoose.model('User', {
   otp: String,
   username: { type: String, unique: true, sparse: true },
   verified: { type: Boolean, default: false },
+  pushToken: String,
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -143,6 +151,54 @@ app.post('/save-username', async (req, res) => {
   res.json({ message: 'Username saved successfully!' });
 });
 
+app.post('/save-token', async (req, res) => {
+  const { username, pushToken } = req.body;
+  if (!username || !pushToken) {
+    return res.status(400).json({ message: 'Missing username or pushToken' });
+  }
+
+  try {
+    // Save token to DB (MongoDB or similar)
+    await User.updateOne(
+      { username },
+      { $set: { pushToken } },
+      { upsert: true }
+    );
+
+    res.status(200).json({ message: 'Token saved successfully' });
+  } catch (err) {
+    console.error('Error saving token:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/notify-user', async (req, res) => {
+  const { sender, receiver, title, body } = req.body;
+
+  try {
+    let user = await User.findOne({ username: receiver });
+    if (user == undefined || user.pushToken == undefined) {
+      return res.status(404).json({ message: 'Receiver not found or no push token' });
+    }
+
+    const payload = {
+      token: user.pushToken,
+      body: title,
+      title: `${sender} says: ${body}`
+      
+    };
+
+    // 👇 Call the notification server
+    await axios.post('http://localhost:5000/api/send-notification', payload);
+
+    res.status(200).json({ message: 'Notification sent successfully' });
+  } catch (err) {
+    console.error('Error sending notification:', err);
+    res.status(500).json({ message: 'Failed to send notification' });
+  }
+});
+
+
 app.post('/search-user', async (req, res) => {
   const { query } = req.body;
 
@@ -163,7 +219,7 @@ app.post('/send-message', async (req, res) => {
 
   try {
     const newMsg = new Message({ from, to, message });
-    await newMsg.save();
+    await newMsg.save();   
     res.status(201).json({ message: 'Message saved successfully' });
   } catch (error) {
     console.error('Error saving message:', error);
