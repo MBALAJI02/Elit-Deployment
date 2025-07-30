@@ -189,7 +189,8 @@ app.post('/notify-user', async (req, res) => {
     };
 
     // 👇 Call the notification server
-    await axios.post('http://localhost:5000/api/send-notification', payload);
+    // await axios.post('http://localhost:5000/api/send-notification', payload);
+    await axios.post('https://chat-app-pushnotification.onrender.com/api/send-notification', payload);
 
     res.status(200).json({ message: 'Notification sent successfully' });
   } catch (err) {
