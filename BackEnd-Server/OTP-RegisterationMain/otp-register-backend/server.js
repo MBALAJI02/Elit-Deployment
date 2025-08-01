@@ -168,14 +168,14 @@ app.post('/save-token', async (req, res) => {
   }
 });
 
-async function sendNotificationWithRetry(payload, retries = 1, delay = 2000) {
+async function sendNotificationWithRetry(payload, retries = 10, delay = 1000) {
   try {
     await axios.post('https://chat-app-pushnotification.onrender.com/api/send-notification', payload);
   } catch (err) {
     if (retries > 0) {
       console.warn(`Retrying... (${retries} left)`);
       await new Promise(res => setTimeout(res, delay));
-      return sendNotificationWithRetry(payload, retries - 1, delay);
+      return sendNotificationWithRetry(payload, retries - 1, delay * 1.5);
     } else {
       throw err;
     }
