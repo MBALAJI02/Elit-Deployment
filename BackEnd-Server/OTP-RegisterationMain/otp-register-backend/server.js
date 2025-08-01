@@ -168,6 +168,20 @@ app.post('/save-token', async (req, res) => {
   }
 });
 
+async function sendNotificationWithRetry(payload, retries = 1, delay = 2000) {
+  try {
+    await axios.post('https://chat-app-pushnotification.onrender.com/api/send-notification', payload);
+  } catch (err) {
+    if (retries > 0) {
+      console.warn(`Retrying... (${retries} left)`);
+      await new Promise(res => setTimeout(res, delay));
+      return sendNotificationWithRetry(payload, retries - 1, delay);
+    } else {
+      throw err;
+    }
+  }
+}
+
 app.post('/notify-user', async (req, res) => {
   const { sender, receiver, title, body } = req.body;
 
@@ -179,13 +193,12 @@ app.post('/notify-user', async (req, res) => {
 
     const payload = {
       token: user.pushToken,
-      title: title,
-      body: `${sender} says: ${body}`
+      body: title,
+      title: `${sender} says: ${body}`
+
     };
 
-    // 👇 Call the notification server
-    // await axios.post('http://localhost:5000/api/send-notification', payload);
-    await axios.post('https://chat-app-pushnotification.onrender.com/api/send-notification', payload);
+    await sendNotificationWithRetry(payload);
 
     res.status(200).json({ message: 'Notification sent successfully' });
   } catch (err) {
