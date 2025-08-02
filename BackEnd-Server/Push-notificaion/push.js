@@ -1,11 +1,14 @@
 // server.js
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const notificationRoutes = require('./notification.routes');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PN_PORT;
+
+app.use(cors());
 
 app.use(bodyParser.json());
 
