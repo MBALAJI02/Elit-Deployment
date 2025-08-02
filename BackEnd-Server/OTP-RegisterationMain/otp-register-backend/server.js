@@ -193,8 +193,8 @@ app.post('/notify-user', async (req, res) => {
 
     const payload = {
       token: user.pushToken,
-      body: title,
-      title: `${sender}`
+      body: body,
+      title: `${sender} `
 
     };
 
