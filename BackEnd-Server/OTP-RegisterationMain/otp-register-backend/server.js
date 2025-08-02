@@ -172,22 +172,23 @@ app.post('/notify-user', async (req, res) => {
   const { sender, receiver, title, body } = req.body;
 
   try {
-    let user = await User.findOne({ username: receiver });
-    if (user == undefined || user.pushToken == undefined) {
+    const user = await User.findOne({ username: receiver });
+
+    if (!user || !user.pushToken) {
       return res.status(404).json({ message: 'Receiver not found or no push token' });
     }
 
+    // Just return the payload — don't send it from here
     const payload = {
       token: user.pushToken,
-      body: body,
-      title: `${sender} `
-
+      body: title,
+      title: `${sender} says: ${body}`
     };
 
-    res.status(200).json({ message: 'Notification sent successfully' });
+    res.status(200).json({ message: 'Ready to notify', payload });
   } catch (err) {
-    console.error('Error sending notification:', err);
-    res.status(500).json({ message: 'Failed to send notification' });
+    console.error('Error preparing notification:', err);
+    res.status(500).json({ message: 'Failed to prepare notification' });
   }
 });
 
