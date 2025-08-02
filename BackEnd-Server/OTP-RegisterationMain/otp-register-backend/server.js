@@ -181,8 +181,8 @@ app.post('/notify-user', async (req, res) => {
     // Just return the payload — don't send it from here
     const payload = {
       token: user.pushToken,
-      body: title,
-      title: `${sender} says: ${body}`
+      body: body,
+      title: `${sender}`
     };
 
     res.status(200).json({ message: 'Ready to notify', payload });
