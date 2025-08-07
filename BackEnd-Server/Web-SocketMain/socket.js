@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
   socket.on('join', (username) => {
     socket.join(username);
     userSocketMap[username] = socket.id;
-    userStatusMap[username] = { online: true, lastSeen: null }; 
+    userStatusMap[username] = { online: true, lastSeen: null }; // Set user as online
     io.emit('user_status', { username, online: true });
     console.log(`${username} joined room`);
   });
@@ -62,7 +62,7 @@ io.on('connection', (socket) => {
         lastSeen: userStatusMap[username].lastSeen
       });
       // Notify backend to update last seen in MongoDB
-      axios.post('https://chat-app-server-ks97.onrender.com', {
+      axios.post('https://chat-app-server-ks97.onrender.com/update-last-seen', {
         username,
         lastSeen: userStatusMap[username].lastSeen
       }).catch((err) => {
