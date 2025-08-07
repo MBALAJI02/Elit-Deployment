@@ -9,11 +9,7 @@ const PORT = process.env.PORT;
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://localhost:4200', // Angular port
-  methods: ['GET', 'POST'],
-  credentials: true // Optional if you're using cookies
-}));
+app.use(cors({}));
 
 app.use(bodyParser.json());
 
