@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -18,12 +19,16 @@ const io = new Server(server, {
 
 const userSocketMap = {};
 
+const userStatusMap = {};
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('join', (username) => {
     socket.join(username);
     userSocketMap[username] = socket.id;
+    userStatusMap[username] = { online: true, lastSeen: null }; 
+    io.emit('user_status', { username, online: true });
     console.log(`${username} joined room`);
   });
 
@@ -46,6 +51,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    const username = Object.keys(userSocketMap).find(
+      (key) => userSocketMap[key] === socket.id
+    );
+    if (username) {
+      userStatusMap[username] = { online: false, lastSeen: new Date() };
+      io.emit('user_status', {
+        username,
+        online: false,
+        lastSeen: userStatusMap[username].lastSeen
+      });
+      // Notify backend to update last seen in MongoDB
+      axios.post('https://chat-app-server-ks97.onrender.com', {
+        username,
+        lastSeen: userStatusMap[username].lastSeen
+      }).catch((err) => {
+        console.error('Error updating last seen in DB:', err);
+      });
+      delete userSocketMap[username];
+      console.log(`${username} disconnected, last seen: ${userStatusMap[username].lastSeen}`);
+    }
     console.log('User disconnected:', socket.id);
   });
 });
