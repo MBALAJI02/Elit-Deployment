@@ -9,7 +9,11 @@ const PORT = process.env.PORT;
 
 const app = express();
 
-app.use(cors({}));
+app.use(cors({
+  origin: 'http://localhost:4200', // Angular port
+  methods: ['GET', 'POST'],
+  credentials: true // Optional if you're using cookies
+}));
 
 app.use(bodyParser.json());
 
@@ -30,7 +34,9 @@ const User = mongoose.model('User', {
   username: { type: String, unique: true, sparse: true },
   verified: { type: Boolean, default: false },
   pushToken: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  lastSeen: { type: Date, default: null },
+  online: { type: Boolean, default: false }
 });
 
 const Message = mongoose.model('Message', {
@@ -161,7 +167,7 @@ app.post('/save-token', async (req, res) => {
       { upsert: true }
     );
 
-    res.status(200).json({ message: 'Token saved successfully' });
+    res.status(200).json({ message: 'Token saved successfully', });
   } catch (err) {
     console.error('Error saving token:', err);
     res.status(500).json({ message: 'Server error' });
@@ -181,8 +187,8 @@ app.post('/notify-user', async (req, res) => {
     // Just return the payload — don't send it from here
     const payload = {
       token: user.pushToken,
-      body: body,
-      title: `${sender}`
+      body: title,
+      title: `${sender} says: ${body}`
     };
 
     res.status(200).json({ message: 'Ready to notify', payload });
@@ -397,6 +403,35 @@ app.post('/reset-unread', async (req, res) => {
   } catch (err) {
     console.error('Error resetting unread in DB:', err);
     res.status(500).json({ message: 'Error resetting unread count' });
+  }
+});
+
+app.get('/user-status/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({
+      online: false, // Default to offline; WebSocket will override if online
+      lastSeen: user.lastSeen
+    });
+  } catch (error) {
+    console.error('Error fetching user status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update last seen when notified by WebSocket
+app.post('/update-last-seen', async (req, res) => {
+  const { username, lastSeen } = req.body;
+  try {
+    await User.updateOne({ username }, { lastSeen: new Date(lastSeen) });
+    res.status(200).json({ message: 'Last seen updated' });
+  } catch (error) {
+    console.error('Error updating last seen:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
