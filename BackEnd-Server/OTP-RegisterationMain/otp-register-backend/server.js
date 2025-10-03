@@ -5,6 +5,8 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const PORT = process.env.PORT;
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app = express();
 
@@ -53,31 +55,6 @@ function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.USEREMAIL,
-//     pass:  process.env.USEREMAILPASS
-//   },
-//   tls: {
-//     rejectUnauthorized: false
-//   }
-// });
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.sendgrid.net",
-  port: 587,
-  auth: {
-    user: "apikey",                    
-    pass: process.env.SENDGRID_API_KEY 
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-
-
 app.post('/send-otp', async (req, res) => {
   const { contact } = req.body;
 
@@ -104,14 +81,15 @@ app.post('/send-otp', async (req, res) => {
 
   if (contact.includes('@')) {
     try {
-      await transporter.sendMail({
-        // from: 'yourgmail@gmail.com',
-        from: "yourverifiedemail@domain.com",
+
+      await sgMail.send({
         to: contact,
+        from: 'yourverifiedemail@domain.com', 
         subject: 'Your OTP Code',
         text: `Your OTP is: ${otp}`
       });
       console.log('Email sent to:', contact);
+
     } catch (error) {
       console.error('Email sending failed:', error);
       return res.status(500).json({ message: 'Failed to send email' });
