@@ -82,13 +82,17 @@ app.post('/send-otp', async (req, res) => {
   if (contact.includes('@')) {
     try {
 
-      await sgMail.send({
+     const msg = {
         to: contact,
-        from: 'balajimohan941@gmail.com', 
-        subject: 'Your OTP Code',
+        from: {
+          email: "balajimohan941@gmail.com", 
+          name: "EliteChat"
+        },
+        subject: "Your OTP Code",
         text: `Your OTP is: ${otp}`
-      });
-      console.log('Email sent to:', contact);
+      };
+      await sgMail.send(msg);
+      console.log('Email sent to:::', contact);
 
     } catch (error) {
       console.error('Email sending failed:', error);
