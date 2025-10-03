@@ -53,16 +53,29 @@ function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.USEREMAIL,
+//     pass:  process.env.USEREMAILPASS
+//   },
+//   tls: {
+//     rejectUnauthorized: false
+//   }
+// });
+
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.sendgrid.net",
+  port: 587,
   auth: {
-    user: process.env.USEREMAIL,
-    pass:  process.env.USEREMAILPASS
+    user: "apikey",                    
+    pass: process.env.SENDGRID_API_KEY 
   },
   tls: {
     rejectUnauthorized: false
   }
 });
+
 
 
 app.post('/send-otp', async (req, res) => {
@@ -87,6 +100,7 @@ app.post('/send-otp', async (req, res) => {
 
   const user = new User({ contact, otp });
   await user.save();
+
 
   if (contact.includes('@')) {
     try {
