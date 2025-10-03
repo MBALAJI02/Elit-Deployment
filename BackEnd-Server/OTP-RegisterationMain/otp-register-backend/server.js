@@ -4,20 +4,19 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const axios = require('axios');
 const PORT = process.env.PORT;
 
 const app = express();
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  credentials: true
-}));
+app.use(cors({}));
 
 app.use(bodyParser.json());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 }).then(() => {
   console.log('✅ MongoDB successfully connected');
 })
@@ -25,7 +24,7 @@ mongoose.connect(process.env.MONGODB_URL, {
     console.error('❌ MongoDB connection error:', err);
   });
 
-const UserSchema = new mongoose.Schema({
+const User = mongoose.model('User', {
   contact: String,
   otp: String,
   username: { type: String, unique: true, sparse: true },
@@ -34,19 +33,16 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   lastSeen: { type: Date, default: null },
   online: { type: Boolean, default: false }
-}, { versionKey: false });
+});
 
-const User = mongoose.model('User', UserSchema);
-
-const MessageSchema = new mongoose.Schema({
+const Message = mongoose.model('Message', {
   from: String,
   to: String,
   message: String,
   read: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now }
-}, { versionKey: false });
+});
 
-const Message = mongoose.model('Message', MessageSchema);
 
 
 function generateOTP() {
@@ -69,21 +65,18 @@ app.post('/send-otp', async (req, res) => {
   const { contact } = req.body;
 
   const verifiedUser = await User.findOne({ contact, verified: true });
-  if (verifiedUser && verifiedUser != undefined) {
-    return res.json({
-      result_code: "1",
-      result_text: 'User already registered'
-    });
+  if (verifiedUser) {
+    return res.status(400).json({ message: 'User already registered' });
   }
 
   const unverifiedUser = await User.findOne({ contact, verified: false });
-  if (unverifiedUser && unverifiedUser != undefined) {
+  if (unverifiedUser) {
     await User.deleteOne({ contact });
   }
 
 
   const otp = generateOTP();
-  console.log('Generated OTP:::', otp);
+  console.log('Generated OTP::::::::::::::::::::::', otp);
 
   const user = new User({ contact, otp });
   await user.save();
@@ -96,16 +89,14 @@ app.post('/send-otp', async (req, res) => {
         subject: 'Your OTP Code',
         text: `Your OTP is: ${otp}`
       });
-      console.log('Email sent to:', contact);
+      console.log('✅ Email sent to', contact);
     } catch (error) {
       console.error('Email sending failed:', error);
       return res.status(500).json({ message: 'Failed to send email' });
     }
   }
-  res.json({
-    result_code: "0",
-    result_text: 'OTP sent'
-  });
+
+  res.json({ message: 'OTP sent' });
 });
 
 app.post('/verify-otp', async (req, res) => {
@@ -113,10 +104,7 @@ app.post('/verify-otp', async (req, res) => {
   const user = await User.findOne({ contact, otp });
 
   if (!user) {
-    return res.json({
-      result_code: "1",
-      result_text: 'Invalid OTP'
-    });
+    return res.status(400).json({ message: 'Invalid OTP' });
   }
 
   // await User.deleteMany({ contact });
@@ -124,10 +112,7 @@ app.post('/verify-otp', async (req, res) => {
   user.otp = undefined;
   await user.save();
 
-  res.json({
-    result_code: "0",
-    result_text: 'Verification successful'
-  });
+  res.json({ message: 'Verification successful' });
 });
 
 
@@ -137,17 +122,10 @@ app.post('/check-contact', async (req, res) => {
   const user = await User.findOne({ contact });
 
   if (!user) {
-    return res.json({
-      result_code: "1",
-      result_text: 'User not found'
-    });
+    return res.status(400).json({ message: 'User not found' });
   }
 
-  res.json({
-    result_code: "0",
-    result_text: 'User found',
-    username: user.username
-  });
+  res.json({ message: 'User found', username: user.username || null });
 });
 
 
@@ -156,53 +134,39 @@ app.post('/check-contact', async (req, res) => {
 app.post('/save-username', async (req, res) => {
   const { contact, username } = req.body;
 
+
   const user = await User.findOne({ contact });
 
   if (!user) {
-    return res.json({
-      result_code: "1",
-      result_text: 'User not found'
-    });
+    return res.status(400).json({ message: 'User not found' });
   }
+
 
   user.username = username;
   user.verified = true;
   await user.save();
 
-  res.json({
-    result_code: "1",
-    result_text: 'Username saved successfully!'
-  });
+  res.json({ message: 'Username saved successfully!' });
 });
 
 app.post('/save-token', async (req, res) => {
   const { username, pushToken } = req.body;
-
   if (!username || !pushToken) {
-    return res.json({
-      result_code: "1",
-      result_text: 'Missing username or pushToken'
-    });
+    return res.status(400).json({ message: 'Missing username or pushToken' });
   }
 
   try {
-    // Save token to DB 
+    // Save token to DB (MongoDB or similar)
     await User.updateOne(
       { username },
       { $set: { pushToken } },
       { upsert: true }
     );
 
-    res.json({
-      result_code: "0",
-      result_text: 'Token saved successfully',
-    });
+    res.status(200).json({ message: 'Token saved successfully', });
   } catch (err) {
-    console.error('Error saving token:::', err);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    console.error('Error saving token:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -213,10 +177,7 @@ app.post('/notify-user', async (req, res) => {
     const user = await User.findOne({ username: receiver });
 
     if (!user || !user.pushToken) {
-      return res.json({
-        result_code: "1",
-        result_text: 'Receiver not found or no push token'
-      });
+      return res.status(404).json({ message: 'Receiver not found or no push token' });
     }
 
     // Just return the payload — don't send it from here
@@ -226,17 +187,10 @@ app.post('/notify-user', async (req, res) => {
       title: `${sender} says: ${body}`
     };
 
-    res.json({
-      result_code: "0",
-      result_text: 'Ready to notify', payload
-    });
-
+    res.status(200).json({ message: 'Ready to notify', payload });
   } catch (err) {
     console.error('Error preparing notification:', err);
-    res.json({
-      result_code: "1",
-      result_text: 'Failed to prepare notification'
-    });
+    res.status(500).json({ message: 'Failed to prepare notification' });
   }
 });
 
@@ -256,25 +210,16 @@ app.post('/send-message', async (req, res) => {
   const { from, to, message } = req.body;
 
   if (!from || !to || !message) {
-    return res.json({
-      result_code: "0",
-      result_text: 'Missing required fields'
-    });
+    return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
     const newMsg = new Message({ from, to, message });
     await newMsg.save();
-    res.status(201).json({
-      result_code: "0",
-      message: 'Message saved successfully'
-    });
+    res.status(201).json({ message: 'Message saved successfully' });
   } catch (error) {
     console.error('Error saving message:', error);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -290,18 +235,14 @@ app.get('/get-messages/:from/:to', async (req, res) => {
       ]
     }).sort({ timestamp: 1 });
 
-    res.json(messages)
-
+    res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// messages are stored inDB
+// Assuming messages are stored in MongoDB
 app.get('/get-messaged-users/:username', async (req, res) => {
   const username = req.params.username;
   try {
@@ -311,14 +252,13 @@ app.get('/get-messaged-users/:username', async (req, res) => {
 
     const users = new Set();
     messages.forEach(msg => {
-      if (msg.from != username) users.add(msg.from);
-      if (msg.to != username) users.add(msg.to);
+      if (msg.from !== username) users.add(msg.from);
+      if (msg.to !== username) users.add(msg.to);
     });
 
     res.json([...users]);
-
   } catch (err) {
-    res.json({ error: 'Error fetching users' });
+    res.status(500).json({ error: 'Error fetching users' });
   }
 });
 
@@ -327,7 +267,7 @@ app.post('/check-contact-exist', async (req, res) => {
     const { contact } = req.body;
     console.log("Received contact to check:", contact);
 
-    // To check if the contact exists
+    // Use Mongoose User model to check if the contact exists
     const user = await User.findOne({ contact });
 
     if (user) {
@@ -337,10 +277,7 @@ app.post('/check-contact-exist', async (req, res) => {
     }
   } catch (error) {
     console.error('Error checking contact:', error);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ error: 'Server error. Try again later.' });
   }
 });
 
@@ -348,26 +285,20 @@ app.post('/check-username', async (req, res) => {
   try {
     const { username } = req.body;
 
-    if (!username || username.trim().length == 0) {
-      return res.json({
-        result_code: "1",
-        result_text: 'Username is required'
-      });
+    if (!username || username.trim().length === 0) {
+      return res.status(400).json({ message: 'Username is required' });
     }
 
     const user = await User.findOne({ username });
 
     if (user) {
-      return res.json({ exists: true });
+      return res.status(200).json({ exists: true }); // 200 OK, not 400
     }
 
-    res.json({ exists: false });
+    res.status(200).json({ exists: false }); // 200 OK
   } catch (err) {
     console.error('Error checking username:', err);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -384,10 +315,7 @@ app.delete('/clear-message/:username/:messagesToDelete', async (req, res) => {
     res.sendStatus(200);
   } catch (err) {
     console.error('Messages Clear error:', err);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).send('Server error');
   }
 });
 
@@ -451,16 +379,10 @@ app.post('/mark-messages-read', async (req, res) => {
       { from: to, to: from, read: false },
       { $set: { read: true } }
     );
-    res.status(200).json({
-      result_code: "0",
-      result_text: 'Messages marked as read'
-    });
+    res.status(200).json({ message: 'Messages marked as read' });
   } catch (error) {
     console.error(error);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -473,16 +395,10 @@ app.post('/reset-unread', async (req, res) => {
       { $set: { read: true } }
     );
 
-    res.json({
-      result_code: "0",
-      result_text: 'Unread messages marked as read'
-    });
+    res.status(200).json({ message: 'Unread messages marked as read' });
   } catch (err) {
     console.error('Error resetting unread in DB:', err);
-    res.json({
-      result_code: "1",
-      result_text: 'Error resetting unread count'
-    });
+    res.status(500).json({ message: 'Error resetting unread count' });
   }
 });
 
@@ -494,14 +410,12 @@ app.get('/user-status/:username', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     res.json({
-      online: false,
+      online: false, // Default to offline; WebSocket will override if online
       lastSeen: user.lastSeen
     });
   } catch (error) {
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    console.error('Error fetching user status:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -510,16 +424,10 @@ app.post('/update-last-seen', async (req, res) => {
   const { username, lastSeen } = req.body;
   try {
     await User.updateOne({ username }, { lastSeen: new Date(lastSeen) });
-    res.status(200).json({
-      result_code: "0",
-      result_text: 'Last seen updated'
-    });
+    res.status(200).json({ message: 'Last seen updated' });
   } catch (error) {
     console.error('Error updating last seen:', error);
-    res.json({
-      result_code: "1",
-      result_text: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
