@@ -84,7 +84,7 @@ app.post('/send-otp', async (req, res) => {
 
       await sgMail.send({
         to: contact,
-        from: 'yourverifiedemail@domain.com', 
+        from: 'balajimohan941@gmail.com', 
         subject: 'Your OTP Code',
         text: `Your OTP is: ${otp}`
       });
