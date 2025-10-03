@@ -105,7 +105,8 @@ app.post('/send-otp', async (req, res) => {
   if (contact.includes('@')) {
     try {
       await transporter.sendMail({
-        from: 'yourgmail@gmail.com',
+        // from: 'yourgmail@gmail.com',
+        from: "yourverifiedemail@domain.com",
         to: contact,
         subject: 'Your OTP Code',
         text: `Your OTP is: ${otp}`
