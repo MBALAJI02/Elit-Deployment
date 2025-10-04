@@ -239,14 +239,33 @@ app.post('/notify-user', async (req, res) => {
 
 
 app.post('/search-user', async (req, res) => {
-  const { query } = req.body;
+  try {
+    const { query } = req.body;
 
-  const users = await User.find({
-    username: { $regex: new RegExp(query, 'i') },
-    verified: true
-  }).select('username _id');
+    const users = await User.find({
+      username: { $regex: new RegExp(query, 'i') },
+      verified: true
+    }).select('username _id');
 
-  res.json(users);
+    if (users.length > 0) {
+      res.json({
+        result_code: "0",
+        users
+      });
+    } else {
+      res.json({
+        result_code: "1",
+        result_text: 'No user Found'
+      });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      result_code: "2",
+      result_text: 'Server error'
+    });
+  }
 });
 
 app.post('/send-message', async (req, res) => {
